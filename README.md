@@ -30,3 +30,23 @@ The python scripts have a help function which may be called using the `--help` o
 
 ## Our features and other data
 Click [here](https://unh.box.com/s/oj9bsxlfl5cwusi9iboo61rib1di3lhd) to download a tar file which contains the passage rankings, entity rankings, support passage rankings, various ground truth files, feature files, etc. used in this work. 
+
+## Cite 
+```
+@inproceedings{chatterjee2021entity,
+author = {Chatterjee, Shubham and Dietz, Laura},
+title = {Entity Retrieval Using Fine-Grained Entity Aspects},
+year = {2021},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3404835.3463035},
+doi = {10.1145/3404835.3463035},
+booktitle = {Proceedings of the 44th International ACM SIGIR Conference on Research and Development in Information Retrieval},
+numpages = {5},
+location = {Virtual Event, Canada},
+series = {SIGIR '21}
+}
+```
+
+## Contact
+If you have any questions, please contact Shubham Chatterjee at <sc1242@wildcats.unh.edu> or <shubham.chatterjee94@gmail.com>.  
