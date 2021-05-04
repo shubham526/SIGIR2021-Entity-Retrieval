@@ -24,8 +24,8 @@ The python scripts have a help function which may be called using the `--help` o
 
 ## Data
 1. **Datasets.** We use two datasets in our work:
-- TREC CAR. Click [here](http://trec-car.cs.unh.edu/datareleases/) to download the official TREC CAR benchmarks. The experiments in the paper are based on the following two benchmarks: `benchmarkY1-train` and `benchmarkY2-test`. Please download these datasets and the associated qrels. 
-- Entity Aspect Linking. Please download the EAL dataset from [here](https://www.cs.unh.edu/~dietz/eal-dataset-2020/entity-aspect-linking-2020.html).
+- **TREC CAR.** Click [here](http://trec-car.cs.unh.edu/datareleases/) to download the official TREC CAR benchmarks. The experiments in the paper are based on the following two benchmarks: `benchmarkY1-train` and `benchmarkY2-test`. Please download these datasets and the associated qrels. 
+- **Entity Aspect Linking.** Please download the EAL dataset from [here](https://www.cs.unh.edu/~dietz/eal-dataset-2020/entity-aspect-linking-2020.html).
 2. **Corpus.** We use the `paragraphCorpus` provided with the TREC CAR dataset. However, the corpus on the official TREC CAR website does not contain entity aspect links; it contains only entity links. Hence, we have aspect-linked the entire corpus using the aspect linker from [Ramsdell et al., 2020](https://dl.acm.org/doi/10.1145/3340531.3412875).   Click [here](https://unh.box.com/s/arsnh3s7jk2jbrfzb5d7buhhjkwovooj) to download the aspect-linked TREC CAR corpus.
 
 ## Our features and other data
@@ -34,17 +34,17 @@ Click [here](https://unh.box.com/s/oj9bsxlfl5cwusi9iboo61rib1di3lhd) to download
 ## Cite 
 ```
 @inproceedings{chatterjee2021entity,
-author = {Chatterjee, Shubham and Dietz, Laura},
-title = {Entity Retrieval Using Fine-Grained Entity Aspects},
-year = {2021},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3404835.3463035},
-doi = {10.1145/3404835.3463035},
-booktitle = {Proceedings of the 44th International ACM SIGIR Conference on Research and Development in Information Retrieval},
-numpages = {5},
-location = {Virtual Event, Canada},
-series = {SIGIR '21}
+  author = {Chatterjee, Shubham and Dietz, Laura},
+  title = {Entity Retrieval Using Fine-Grained Entity Aspects},
+  year = {2021},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  url = {https://doi.org/10.1145/3404835.3463035},
+  doi = {10.1145/3404835.3463035},
+  booktitle = {Proceedings of the 44th International ACM SIGIR Conference on Research and Development in Information Retrieval},
+  numpages = {5},
+  location = {Virtual Event, Canada},
+  series = {SIGIR '21}
 }
 ```
 
