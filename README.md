@@ -41,6 +41,11 @@ You can read the full description of the data on the official web page of TREC C
 ## Reading the TREC CAR data
 The TREC CAR data can be read using the official `trec-car-tools` available [here](https://github.com/TREMA-UNH/trec-car-tools). We use the Java version in this work.
 
+## Learning-to-rank and ENT-Rank
+- We perform our learning-to-rank experiments using the toolkit `ranklips`. Read about it [here](https://www.cs.unh.edu/~dietz/rank-lips/).
+- We use an easy-to-use ranklips version of ENT-Rank called `ent-ranklips`. Click [here](https://unh.box.com/s/wof0pu754koqqinj8hggvweu8v9yw01a) to download a tar file containing a Haskell binary and a PDF describing its use. 
+
+
 ## Cite 
 ```
 @inproceedings{chatterjee2021entity,
