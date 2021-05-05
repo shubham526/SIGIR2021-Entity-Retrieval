@@ -22,14 +22,24 @@ The folder "python" contains scripts for the following:
 
 The python scripts have a help function which may be called using the `--help` option with then script. For example, `python entity_rerank.py --help`. 
 
-## Data
+## Downloads
 1. **Datasets.** We use two datasets in our work:
 - **TREC CAR.** Click [here](http://trec-car.cs.unh.edu/datareleases/) to download the official TREC CAR benchmarks. The experiments in the paper are based on the following two benchmarks: `benchmarkY1-train` and `benchmarkY2-test`. Please download these datasets and the associated qrels. 
-- **Entity Aspect Linking.** Please download the EAL dataset from [here](https://www.cs.unh.edu/~dietz/eal-dataset-2020/entity-aspect-linking-2020.html).
-2. **Corpus.** We use the `paragraphCorpus` provided with the TREC CAR dataset. However, the corpus on the official TREC CAR website does not contain entity aspect links; it contains only entity links. Hence, we have aspect-linked the entire corpus using the aspect linker from [Ramsdell et al., 2020](https://dl.acm.org/doi/10.1145/3340531.3412875).   Click [here](https://unh.box.com/s/arsnh3s7jk2jbrfzb5d7buhhjkwovooj) to download the aspect-linked TREC CAR corpus.
-
-## Our features and other data
+- **Entity Aspect Linking.** Click [here](https://www.cs.unh.edu/~dietz/eal-dataset-2020/entity-aspect-linking-2020.html) to download the EAL dataset.
+2. **Aspect Linked Corpus.** Click [here](https://unh.box.com/s/arsnh3s7jk2jbrfzb5d7buhhjkwovooj) to download the aspect-linked TREC CAR corpus used in this work. We use the `paragraphCorpus` provided with the TREC CAR dataset. However, the corpus on the official TREC CAR website does not contain entity aspect links; it contains only entity links. Hence, we have aspect-linked the entire corpus using the aspect linker from [Ramsdell et al., 2020](https://dl.acm.org/doi/10.1145/3340531.3412875).
+3. **Our features and other data**
 Click [here](https://unh.box.com/s/oj9bsxlfl5cwusi9iboo61rib1di3lhd) to download a tar file which contains the passage rankings, entity rankings, support passage rankings, various ground truth files, feature files, etc. used in this work. 
+
+## Description of the aspect linked corpus
+The aspect linked corpus is in the same format as the original TREC CAR corpus. The paragraphs are CBOR-encoded to preserve the entity links contained therein. Each entity link is represented by four components: 
+- Target Page: Name of the Wikipedia page which it links to.
+- Target PageId: Id of the Wikipedia page which it links to.
+- Link Section: Section (aspect) of the Wikipedia page it links to. This is the aspect link.
+- Anchor Text: Anchor text of the link. 
+You can read the full description of the data on the official web page of TREC CAR [here](http://trec-car.cs.unh.edu/).
+
+## Reading the TREC CAR data
+The TREC CAR data can be read using the official `trec-car-tools` available [here](https://github.com/TREMA-UNH/trec-car-tools). We use the Java version in this work.
 
 ## Cite 
 ```
