@@ -36,6 +36,7 @@ The aspect linked corpus is in the same format as the original TREC CAR corpus. 
 - Target PageId: Id of the Wikipedia page which it links to.
 - Link Section: Section (aspect) of the Wikipedia page it links to. This is the aspect link.
 - Anchor Text: Anchor text of the link. 
+
 You can read the full description of the data on the official web page of TREC CAR [here](http://trec-car.cs.unh.edu/).
 
 ## Reading the TREC CAR data
