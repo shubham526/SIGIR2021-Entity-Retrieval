@@ -55,7 +55,7 @@ The TREC CAR data can be read using the official `trec-car-tools` available [her
 
 ## Learning-to-rank and ENT-Rank
 - We perform our learning-to-rank experiments using the toolkit `ranklips`. Read about it [here](https://www.cs.unh.edu/~dietz/rank-lips/).
-- We use an easy-to-use ranklips version of ENT-Rank called `ent-ranklips`. Click [here](https://unh.box.com/s/wof0pu754koqqinj8hggvweu8v9yw01a) to download a tar file containing a Haskell binary and a PDF describing its use. 
+- We use an easy-to-use ranklips version of [ENT-Rank](https://www.cs.unh.edu/~dietz/appendix/ent-rank/) called `ent-ranklips`. Click [here](https://unh.box.com/s/wof0pu754koqqinj8hggvweu8v9yw01a) to download a tar file containing a Haskell binary and a PDF describing its use. 
 
 
 ## Cite 
