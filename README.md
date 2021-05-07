@@ -3,24 +3,18 @@ Shubham Chatterjee and Laura Dietz. 2021. Entity Retrieval Using Fine-Grained En
 
 This is an online appendix for the paper. This repository contains
 - code associated with this paper and the instructions on how to execute the code. 
-- additional resources developed for this paper, including an aspect-linked version of the corpus from [TREC Complex Answer Retrieval](http://trec-car.cs.unh.edu/).
+- additional resources developed for this paper, including an aspect-linked version of the corpus from [TREC Complex Answer Retrieval (CAR)](http://trec-car.cs.unh.edu/). 
 
-## Running the code
-The code is partially in Java and partially in Python. The code has been tested using Java openJDK 13 and Python 3.7. The java code required Maven 3 to be installed. 
+Shield: [![CC BY-SA 4.0][cc-by-sa-shield]][cc-by-sa]
 
-To install the java code: 
-- Clone this repository using `git clone`. 
-- Inside the repository, there are two folders: java (containing the java code) and python (containing the python code). From the java directory, run the following command: `mvn clean install`. This should create a jar file called `SIGIR2021-Short-Final-Code-Release-1.0-SNAPSHOT-jar-with-dependencies.jar` inside `java/target`.
+All data associated with this work is licensed and released under a
+[Creative Commons Attribution-ShareAlike 4.0 International License][cc-by-sa].
 
-You may now run this jar file using `java -jar SIGIR2021-Short-Final-Code-Release-1.0-SNAPSHOT-jar-with-dependencies.jar` along with various command line arguments (see below)  to create the features for training. 
+[![CC BY-SA 4.0][cc-by-sa-image]][cc-by-sa]
 
-The folder "python" contains scripts for the following:
-1. `bert_entity_rerank.py`: Entity re-ranking using [BERT-as-a-service](https://github.com/hanxiao/bert-as-service).
-2. `create-page-id-to-name-mapping.py`: Script to create a mapping from TREC CAR entity-ids to entity-names.
-3. `create_query_annotations.py`: Script to annotate TREC CAR queries using TagMe.
-4. `entity_rerank.py`: Re-implementation of the entity ranking method from [Gerritse et al., 2020](https://arxiv.org/abs/2005.02843).
-
-The python scripts have a help function which may be called using the `--help` option with then script. For example, `python entity_rerank.py --help`. 
+[cc-by-sa]: http://creativecommons.org/licenses/by-sa/4.0/
+[cc-by-sa-image]: https://licensebuttons.net/l/by-sa/4.0/88x31.png
+[cc-by-sa-shield]: https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg
 
 ## Downloads
 1. **Datasets.** We use two datasets in our work:
@@ -38,6 +32,23 @@ The aspect linked corpus is in the same format as the original TREC CAR corpus. 
 - Anchor Text: Anchor text of the link. 
 
 You can read the full description of the data on the official web page of TREC CAR [here](http://trec-car.cs.unh.edu/).
+
+## Running the code
+The code is partially in Java and partially in Python. The code has been tested using Java openJDK 13 and Python 3.7. The java code required Maven 3 to be installed. 
+
+To install the java code: 
+- Clone this repository using `git clone`. 
+- Inside the repository, there are two folders: java (containing the java code) and python (containing the python code). From the java directory, run the following command: `mvn clean install`. This should create a jar file called `SIGIR2021-Short-Final-Code-Release-1.0-SNAPSHOT-jar-with-dependencies.jar` inside `java/target`.
+
+You may now run this jar file using `java -jar SIGIR2021-Short-Final-Code-Release-1.0-SNAPSHOT-jar-with-dependencies.jar` along with various command line arguments (see below)  to create the features for training. 
+
+The folder "python" contains scripts for the following:
+1. `bert_entity_rerank.py`: Entity re-ranking using [BERT-as-a-service](https://github.com/hanxiao/bert-as-service).
+2. `create-page-id-to-name-mapping.py`: Script to create a mapping from TREC CAR entity-ids to entity-names.
+3. `create_query_annotations.py`: Script to annotate TREC CAR queries using TagMe.
+4. `entity_rerank.py`: Re-implementation of the entity ranking method from [Gerritse et al., 2020](https://arxiv.org/abs/2005.02843).
+
+The python scripts have a help function which may be called using the `--help` option with then script. For example, `python entity_rerank.py --help`. 
 
 ## Reading the TREC CAR data
 The TREC CAR data can be read using the official `trec-car-tools` available [here](https://github.com/TREMA-UNH/trec-car-tools). We use the Java version in this work.
