@@ -42,7 +42,61 @@ The folder "python" contains scripts for the following:
 The python scripts have a help function which may be called using the `--help` option with then script. For example, `python entity_rerank.py --help`. 
 
 ## Reading the TREC CAR data
-The TREC CAR data can be read using the official `trec-car-tools` available [here](https://github.com/TREMA-UNH/trec-car-tools). We use the Java version in this work.
+The TREC CAR data can be read using the official `trec-car-tools` available [here](https://github.com/TREMA-UNH/trec-car-tools). We use the Java version in this work. Below is a code snippet in Java to read the aspect-linked corpus. 
+
+You can read the aspect linked corpus like this:
+
+```
+ BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath));
+ for(Data.Paragraph paragraph : DeserializeData.iterableParagraphs(bis)) {
+ 
+     // Get the entities in the paragraph
+     List<String> entityList = getEntities(paragraph);
+     
+     // Do something else
+ }
+```
+
+```
+ /**
+   * Method to return all entities in a paragraph.
+   * @param paragraph Represents a Wikipedia paragraph with entity links preserved.
+   * @return List of entities in the paragraph 
+   */
+   List<String> getEntities(@NotNull Data.Paragraph paragraph) {
+        List<String> entityList = new ArrayList<>();
+        
+        // Iterate over the body of the paragraph
+        for (Data.ParaBody body : paragraph.getBodies()) {
+        
+            // If you found a link
+            if (body instanceof Data.ParaLink) {
+                Data.ParaLink paraLink = (Data.ParaLink) body;
+                
+                // Get the linked section, that is, entity aspect
+                String linkSection = paraLink.getLinkSection();
+                
+                // Get the anchor text of the link
+                String anchorText = paraLink.getAnchorText();
+                
+                // Get the Id of the Wikipedia page
+                String pageId = paraLink.getPageId();
+                
+                // Get the title of the Wikipedia page
+                String pageName = paraLink.getPage();
+                
+                // We put everything into a JSON Object
+                JSONObject entity = new JSONObject();
+                entity.put("mention", anchorText);
+                entity.put("linkPageId", pageId);
+                entity.put("linkPageName", pageName);
+                entity.put("aspect", linkSection);
+                entityList.add(entity.toJSONString());
+            }
+        }
+        return entityList;
+    }
+```
 
 ## Learning-to-rank and ENT-Rank
 - We perform our learning-to-rank experiments using the toolkit `ranklips`. Read about it [here](https://www.cs.unh.edu/~dietz/rank-lips/).
