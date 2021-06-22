@@ -41,10 +41,11 @@ The folder "python" contains scripts for the following:
 
 The python scripts have a help function which may be called using the `--help` option with then script. For example, `python entity_rerank.py --help`. 
 
-## Reading the TREC CAR data
-The TREC CAR data can be read using the official `trec-car-tools` available [here](https://github.com/TREMA-UNH/trec-car-tools). We use the Java version in this work. Below is a code snippet in Java to read the aspect-linked corpus. 
+## Reading the aspect-linked TREC CAR corpus
+The TREC CAR data can be read using the official `trec-car-tools` available [here](https://github.com/TREMA-UNH/trec-car-tools). We use the Java version in this work.
 
-You can read the aspect linked corpus like this:
+Below is a code snippet in Java to read the aspect-linked corpus. 
+
 
 ```
  BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath));
