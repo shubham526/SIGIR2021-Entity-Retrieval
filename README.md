@@ -35,7 +35,7 @@ You may now run this jar file using `java -jar SIGIR2021-Short-Final-Code-Releas
 
 The folder "python" contains scripts for the following:
 1. `bert_entity_rerank.py`: Entity re-ranking using [BERT-as-a-service](https://github.com/hanxiao/bert-as-service).
-2. `create-page-id-to-name-mapping.py`: Script to create a mapping from TREC CAR entity-ids to entity-names.
+2. `create_query_id_to_name_mapping.py`: Script to create a mapping from TREC CAR entity-ids to entity-names.
 3. `create_query_annotations.py`: Script to annotate TREC CAR queries using TagMe.
 4. `entity_rerank.py`: Re-implementation of the entity ranking method from [Gerritse et al., 2020](https://arxiv.org/abs/2005.02843).
 
