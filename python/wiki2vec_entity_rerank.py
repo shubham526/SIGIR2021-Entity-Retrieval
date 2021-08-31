@@ -1,14 +1,12 @@
+import csv
 from typing import Dict, List
 import argparse
 import sys
 import json
 import tqdm
+import gensim
 from scipy import spatial
-import numpy as np
 import operator
-from bert_serving.client import BertClient
-
-bc = BertClient()
 
 
 def load_run_file(file_path: str) -> Dict[str, List[str]]:
@@ -24,6 +22,10 @@ def load_run_file(file_path: str) -> Dict[str, List[str]]:
     return rankings
 
 
+def load_embeddings(embedding_file: str) -> gensim.models.KeyedVectors:
+    return gensim.models.KeyedVectors.load(embedding_file, mmap='r')
+
+
 def get_query_annotations(query_annotations: str) -> Dict[str, float]:
     annotations = json.loads(query_annotations)
     res: Dict[str, float] = {}
@@ -33,60 +35,51 @@ def get_query_annotations(query_annotations: str) -> Dict[str, float]:
     return res
 
 
-def aggregate_embedding(arrays: List, method: str) -> np.ndarray:
-    if method == 'mean':
-        return np.mean(np.array(arrays), axis=0)
-    elif method == 'sum':
-        return np.sum(np.array(arrays), axis=0)
+def in_vocab(entity: str, model) -> bool:
+    return True if entity in model.key_to_index.keys() else False
 
 
-def bert_entity_embedding(entity: str, vec: np.ndarray, method: str) -> np.ndarray:
-    num: int = num_words(entity)
-    entity_embeddings: List[np.ndarray] = [vec[i] for i in range(1, num + 1)]
-    return aggregate_embedding(entity_embeddings, method)
+def to_wiki2vec_entity(entity: str) -> str:
+    return 'ENTITY/' + entity.replace(' ', '_')
 
 
-def get_query_entity_embeddings(query_entities, method: str) -> Dict[str, np.ndarray]:
-    query_entity_embeddings: Dict[str, np.ndarray] = {}
-    for entity in query_entities:
-        # Get BERT embeddings
-        vec = bc.encode([entity])
-        bert_emb = bert_entity_embedding(entity, vec[0], method)  # Embedding for entity
-        query_entity_embeddings[entity] = bert_emb
-    return query_entity_embeddings
+def cosine_distance(
+        query_entity: str,
+        target_entity: str,
+        wiki2vec: gensim.models.KeyedVectors,
+        id_to_name: Dict[str, str]
+) -> float:
 
+    # The code fails for this entity in the annotation because the entity is in plural but the embedding is for
+    # the singular entity. I don't know how to fix this and don't want to spend more time on this.
+    # So this is a hack!
+    if query_entity == 'Antibiotics':
+        query_entity = 'Antibiotic'
 
-def num_words(s: str) -> int:
-    return len(s.split())
+    p_qe = to_wiki2vec_entity(query_entity)
 
-
-def get_target_entity_embedding(target_entity: str, id_to_name: Dict[str, str], method: str) -> np.ndarray:
     if target_entity in id_to_name.keys():
-        target_entity_name = id_to_name[target_entity]
+        p_te = to_wiki2vec_entity(id_to_name[target_entity]).strip()
     else:
-        # If the name is not found in the dict, then extract it from the id.
-        # This is BAD idea!
-        # But its a hack!
-        target_entity_name = target_entity[target_entity.index(':') + 1:].replace('%20', ' ')
+        p_te = to_wiki2vec_entity(target_entity[target_entity.index(':') + 1:].replace('%20', ' '))
 
-    # Get BERT embeddings
-    vec = bc.encode([target_entity_name])
-    te_bert = bert_entity_embedding(target_entity_name, vec[0], method)  # Embedding for target_entity
-    return te_bert
+    if not in_vocab(p_qe, wiki2vec) or not in_vocab(p_te, wiki2vec):
+        return 0.0
+
+    emb_e1 = wiki2vec[p_qe]
+    emb_e2 = wiki2vec[p_te]
+    return 1 - spatial.distance.cosine(emb_e1, emb_e2)
 
 
 def entity_score(
-        query_annotations: Dict[str, float],
-        query_entity_embeddings: Dict[str, np.ndarray],
+        query_entities: Dict[str, float],
         target_entity: str,
-        method: str,
+        wiki2vec: gensim.models.KeyedVectors,
         id_to_name: Dict[str, str]
 ) -> float:
     score = 0
-    te_emb = get_target_entity_embedding(target_entity, id_to_name, method)
-    for query_entity, conf in query_annotations.items():
-        qe_emb = query_entity_embeddings[query_entity]
-        distance = 1 - spatial.distance.cosine(qe_emb, te_emb)
+    for query_entity, conf in query_entities.items():
+        distance = cosine_distance(query_entity, target_entity, wiki2vec, id_to_name)
         score += distance * conf
     return score
 
@@ -94,21 +87,22 @@ def entity_score(
 def re_rank(
         run_dict: Dict[str, List[str]],
         query_annotations: Dict[str, str],
-        method: str,
+        wiki2vec: gensim.models.KeyedVectors,
         id_to_name: Dict[str, str],
         k: int,
         out_file: str
 ) -> None:
+
     print('Re-ranking top-{} entities from the run file.'.format(k))
     for query_id, query_entities in tqdm.tqdm(run_dict.items(), total=len(run_dict)):
         ranked_entities: Dict[str, float] = rank_entities_for_query(
-            entity_list=query_entities[:k],
-            query_annotations=get_query_annotations(query_annotations[query_id]),
-            method=method,
-            id_to_name=id_to_name
+            query_entities[:k],
+            get_query_annotations(query_annotations[query_id]),
+            wiki2vec,
+            id_to_name
         )
         if not ranked_entities:
-            print('Empty ranking for query: {}'.format(query_id))
+            print('Empty ranking for query: {}'.format(query))
         else:
             run_file_strings: List[str] = to_run_file_strings(query_id, ranked_entities)
             write_to_file(run_file_strings, out_file)
@@ -117,18 +111,11 @@ def re_rank(
 def rank_entities_for_query(
         entity_list: List[str],
         query_annotations: Dict[str, float],
-        method: str,
+        wiki2vec: gensim.models.KeyedVectors,
         id_to_name: Dict[str, str]
 ) -> Dict[str, float]:
-    query_entity_embeddings: Dict[str, np.ndarray] = get_query_entity_embeddings(query_annotations.keys(), method)
     ranking: Dict[str, float] = dict(
-        (entity, entity_score(
-            query_annotations=query_annotations,
-            query_entity_embeddings=query_entity_embeddings,
-            target_entity=entity,
-            method=method,
-            id_to_name=id_to_name
-        ))
+        (entity, entity_score(query_annotations, entity, wiki2vec, id_to_name))
         for entity in entity_list
     )
 
@@ -139,7 +126,7 @@ def to_run_file_strings(query: str, entity_ranking: Dict[str, float]) -> List[st
     run_file_strings: List[str] = []
     rank: int = 1
     for entity, score in entity_ranking.items():
-        run_file_string: str = query + ' Q0 ' + entity + ' ' + str(rank) + ' ' + str(score) + ' BERT-ReRank'
+        run_file_string: str = query + ' Q0 ' + entity + ' ' + str(rank) + ' ' + str(score) + ' Wiki2Vec-ReRank'
         run_file_strings.append(run_file_string)
         rank += 1
 
@@ -167,10 +154,10 @@ def main():
     """
     Main method to run code.
     """
-    parser = argparse.ArgumentParser("Entity re-ranking using pre-trained BERT embeddings.")
+    parser = argparse.ArgumentParser("Entity re-ranking using Wiki2Vec. Re-implementation of (Gerritse et al., 2020).")
     parser.add_argument("--run", help="TREC CAR entity run file to re-rank.", required=True)
     parser.add_argument("--annotations", help="File containing TagMe annotations for queries.", required=True)
-    parser.add_argument("--aggr-method", help="Aggregation method for embeddings (mean|sum).", required=True)
+    parser.add_argument("--wiki2vec", help="Wiki2Vec file.", required=True)
     parser.add_argument("--entity-id-to-name", help="File containing mappings from TREC CAR entityIds to entity names.",
                         required=True)
     parser.add_argument("--top-k", help="Top K entities to re-rank from run file.", required=True)
@@ -185,12 +172,16 @@ def main():
     query_annotations: Dict[str, str] = read_tsv(args.annotations)
     print('[Done].')
 
+    print('Loading entity embeddings...')
+    wiki2vec: gensim.models.KeyedVectors = load_embeddings(args.wiki2vec)
+    print('[Done].')
+
     print('Loading entity id to name mappings...')
     id_to_name: Dict[str, str] = read_tsv(args.entity_id_to_name)
     print('[Done].')
 
     print("Re-Ranking run...")
-    re_rank(run_dict, query_annotations, args.aggr_method, id_to_name, int(args.top_k), args.save)
+    re_rank(run_dict, query_annotations, wiki2vec, id_to_name, int(args.top_k), args.save)
     print('[Done].')
 
     print('New run file written to {}'.format(args.save))
