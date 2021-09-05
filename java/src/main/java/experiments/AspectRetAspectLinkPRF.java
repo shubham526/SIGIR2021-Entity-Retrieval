@@ -3,11 +3,12 @@ package experiments;
 import help.LuceneHelper;
 import help.Utilities;
 import me.tongfei.progressbar.ProgressBar;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.jetbrains.annotations.NotNull;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.*;
@@ -38,7 +39,7 @@ public class AspectRetAspectLinkPRF {
                                   int takeKDocs) {
 
         this.paraSearcher = LuceneHelper.createSearcher(paraIndex, "bm25");
-        this.paraRankings = Utilities.readFile(passageRanking);
+        this.paraRankings = Utilities.readRunFile(passageRanking);
         this.takeKDocs = takeKDocs;
         doTask(runFile);
     }
@@ -114,24 +115,25 @@ public class AspectRetAspectLinkPRF {
     private void getAspectListForQuery(@NotNull List<Map.Entry<String, Double>> topKDocs,
                                        Map<String, String> aspectToEntityMap,
                                        Map<String, Double> aspectScores) {
-        JSONParser parser = new JSONParser();
 
         for (Map.Entry<String, Double> entry : topKDocs) {
             String paraId = entry.getKey();
             double paraScore = entry.getValue();
             try {
-                String[] aspectList = Objects.requireNonNull(LuceneHelper.searchIndex("Id", paraId, paraSearcher)).get("Entities").split("\n");
-                for (String aspectStr : aspectList) {
-                    if (! aspectStr.isEmpty()) {
-                        try {
-                            JSONObject jsonObject = (JSONObject) parser.parse(aspectStr);
-                            String aspectId = jsonObject.get("aspect").toString();
-                            String entityId = jsonObject.get("linkPageId").toString();
-                            aspectToEntityMap.put(aspectId, entityId);
-                            aspectScores.compute(aspectId, (t, oldV) -> (oldV == null) ? paraScore : oldV + paraScore);
-                        } catch (org.json.simple.parser.ParseException e) {
-                            System.out.println("aspectStr=" + aspectStr);
-                            e.printStackTrace();
+                Document aspectDoc = LuceneHelper.searchIndex("Id", paraId, paraSearcher);
+                if (aspectDoc != null) {
+                    String[] aspectList = aspectDoc.get("Entities").split("\n");
+                    for (String aspectStr : aspectList) {
+                        if (!aspectStr.isEmpty()) {
+                            try {
+                                JSONObject jsonObject = new JSONObject(aspectStr);
+                                String aspectId = jsonObject.getString("aspect");
+                                String entityId = jsonObject.getString("linkPageId");
+                                aspectToEntityMap.put(aspectId, entityId);
+                                aspectScores.compute(aspectId, (t, oldV) -> (oldV == null) ? paraScore : oldV + paraScore);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
@@ -148,7 +150,7 @@ public class AspectRetAspectLinkPRF {
         Set<String> runFileStrings = new LinkedHashSet<>();
 
         int rank = 1;
-        String info = "Experiment5";
+        String info = "AspectRetAspectLinkPRF";
         Map<String, Double> sortedScoreMap = Utilities.sortByValueDescending(scoreMap);
 
         for (String entity : sortedScoreMap.keySet()) {
@@ -175,3 +177,4 @@ public class AspectRetAspectLinkPRF {
     }
 
 }
+

@@ -14,8 +14,8 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.similarities.Similarity;
 import org.jetbrains.annotations.NotNull;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -69,7 +69,7 @@ public class AspectRetQE {
         String sep = queryIdToNameMapFile.contains("tsv") ? "tsv" : "csv";
 
         System.out.print("Loading passage run....");
-        this.paraRankings = Utilities.readFile(passageRanking);
+        this.paraRankings = Utilities.readRunFile(passageRanking);
         System.out.println("[Done].");
 
         System.out.print("Loading " + sep + " file....");
@@ -314,8 +314,11 @@ public class AspectRetQE {
                                   Map<String, String> aspectToEntityMap) {
 
         try {
-            String entity = Objects.requireNonNull(LuceneHelper.searchIndex("Id", paraId, paraSearcher)).get("Entities");
-            getAspectToEntityMap(entity, aspectToEntityMap);
+            Document aspectDoc = LuceneHelper.searchIndex("Id", paraId, paraSearcher);
+            if (aspectDoc != null) {
+                String entity = aspectDoc.get("Entities");
+                getAspectToEntityMap(entity, aspectToEntityMap);
+            }
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
@@ -335,16 +338,14 @@ public class AspectRetQE {
     private void getAspectToEntityMap(@NotNull String entity, Map<String, String> aspectToEntityMap) {
 
         String[] aspectList = entity.split("\n");
-        JSONParser parser = new JSONParser();
         for (String aspectStr : aspectList) {
             if (! aspectStr.isEmpty()) {
                 try {
-                    JSONObject jsonObject = (JSONObject) parser.parse(aspectStr);
-                    String aspectId = jsonObject.get("aspect").toString();
-                    String entityId = jsonObject.get("linkPageId").toString();
+                    JSONObject jsonObject = new JSONObject(aspectStr);
+                    String aspectId = jsonObject.getString("aspect");
+                    String entityId = jsonObject.getString("linkPageId");
                     aspectToEntityMap.put(aspectId, entityId);
-                } catch (org.json.simple.parser.ParseException e) {
-                    System.out.println("aspectStr=" + aspectStr);
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
@@ -356,7 +357,7 @@ public class AspectRetQE {
         Set<String> runFileStrings = new LinkedHashSet<>();
 
         int rank = 1;
-        String info = "Experiment1";
+        String info = "AspectRetQE";
         Map<String, Double> sortedScoreMap = Utilities.sortByValueDescending(scoreMap);
 
         for (String entity : sortedScoreMap.keySet()) {
@@ -428,7 +429,7 @@ public class AspectRetQE {
                 System.exit(1);
         }
 
-        String outFile = "AspectRetQE" + "-" + s1 + "-" + s2 + "-" + takeKDocs + "-" + takeKTerms + ".run";
+        String outFile = "Experiment1" + "-" + s1 + "-" + s2 + "-" + takeKDocs + "-" + takeKTerms + ".run";
         String runFile = outFileDir + "/" + outFile;
 
         new AspectRetQE(paraIndex, catalogIndex, passageRanking, runFile, stopWordsFile, queryIdToNameMapFile,
@@ -436,3 +437,4 @@ public class AspectRetQE {
     }
 
 }
+

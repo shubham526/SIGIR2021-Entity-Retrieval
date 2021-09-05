@@ -3,11 +3,12 @@ package experiments;
 import help.LuceneHelper;
 import help.Utilities;
 import me.tongfei.progressbar.ProgressBar;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.jetbrains.annotations.NotNull;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.*;
@@ -89,25 +90,26 @@ public class SupportPsgAspectLinkPRF {
     @NotNull
     private Map<String, Double> getAspectsForEntity(String entity, @NotNull Map<String, Double> psgRanking) {
         Map<String, Double> aspectsForEntity = new HashMap<>();
-        JSONParser parser = new JSONParser();
 
         for (String paraId : psgRanking.keySet()) {
             double paraScore = psgRanking.get(paraId);
             try {
-                String[] aspectsInPsg = Objects.requireNonNull(LuceneHelper.searchIndex("Id", paraId, paraSearcher)).get("Entities").split("\n");
-                for (String aspectStr : aspectsInPsg) {
-                    if (!aspectStr.isEmpty()) {
-                        try {
-                            JSONObject jsonObject = (JSONObject) parser.parse(aspectStr);
-                            String aspectId = jsonObject.get("aspect").toString();
-                            String entityId = jsonObject.get("linkPageId").toString();
-                            if (entity.equals(entityId)) {
-                                aspectsForEntity.compute(aspectId, (t, oldV) -> (oldV == null) ? paraScore : oldV + paraScore);
-                                break;
+                Document aspectDoc = LuceneHelper.searchIndex("Id", paraId, paraSearcher);
+                if (aspectDoc != null) {
+                    String[] aspectsInPsg = aspectDoc.get("Entities").split("\n");
+                    for (String aspectStr : aspectsInPsg) {
+                        if (!aspectStr.isEmpty()) {
+                            try {
+                                JSONObject jsonObject = new JSONObject(aspectStr);
+                                String aspectId = jsonObject.getString("aspect");
+                                String entityId = jsonObject.getString("linkPageId");
+                                if (entity.equals(entityId)) {
+                                    aspectsForEntity.compute(aspectId, (t, oldV) -> (oldV == null) ? paraScore : oldV + paraScore);
+                                    break;
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                        } catch (org.json.simple.parser.ParseException e) {
-                            System.out.println("aspectStr=" + aspectStr);
-                            e.printStackTrace();
                         }
                     }
                 }
@@ -123,7 +125,7 @@ public class SupportPsgAspectLinkPRF {
         Set<String> runFileStrings = new LinkedHashSet<>();
 
         int rank = 1;
-        String info = "Experiment4";
+        String info = "SupportPsgAspectLinkPRF";
         Map<String, Double> sortedScoreMap = Utilities.sortByValueDescending(scoreMap);
 
         for (String entity : sortedScoreMap.keySet()) {
@@ -139,10 +141,11 @@ public class SupportPsgAspectLinkPRF {
         String passageRanking = args[1];
         String runFileDir = args[2];
 
-        String outFile = "SupportPsgAspectLinkPRF.run";
+        String outFile = "Experiment4.run";
         String runFile = runFileDir + "/" + outFile;
 
         new SupportPsgAspectLinkPRF(paraIndex, passageRanking, runFile);
     }
 
 }
+

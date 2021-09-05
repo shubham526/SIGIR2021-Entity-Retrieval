@@ -14,8 +14,8 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.similarities.Similarity;
 import org.jetbrains.annotations.NotNull;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -140,7 +140,6 @@ public class SupportPsgQE {
     @NotNull
     private Set<String> getAspectsForEntity(String entity, @NotNull Map<String, Double> psgRanking) {
         Set<String> aspectsForEntity = new HashSet<>();
-        JSONParser parser = new JSONParser();
         
         for (String paraId : psgRanking.keySet()) {
             try {
@@ -148,14 +147,13 @@ public class SupportPsgQE {
                 for (String aspectStr : aspectsInPsg) {
                     if (! aspectStr.isEmpty()) {
                         try {
-                            JSONObject jsonObject = (JSONObject) parser.parse(aspectStr);
-                            String aspectId = jsonObject.get("aspect").toString();
-                            String entityId = jsonObject.get("linkPageId").toString();
+                            JSONObject jsonObject = new JSONObject(aspectStr);
+                            String aspectId = jsonObject.getString("aspect");
+                            String entityId = jsonObject.getString("linkPageId");
                             if (entity.equals(entityId)) {
                                 aspectsForEntity.add(aspectId);
                             }
-                        } catch (org.json.simple.parser.ParseException e) {
-                            System.out.println("aspectStr=" + aspectStr);
+                        } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
@@ -286,14 +284,14 @@ public class SupportPsgQE {
         // Build the index of aspects
         // First create the IndexWriter
         IndexWriter iw = RAMIndex.createWriter(analyzer);
-        //IndexWriter iw = RAMIndex.createWriter(new EnglishAnalyzer());
+
         // Now create the index
         try {
             RAMIndex.createIndex(aspectList, iw);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //System.out.println("Number of documents in index = " + RAMIndex.numDocs(iw));
+
         // Create the IndexSearcher
 
         IndexSearcher is = null;
@@ -306,11 +304,6 @@ public class SupportPsgQE {
         // Now search the query
         assert is != null;
         aspectScores = Utilities.sortByValueDescending(RAMIndex.searchIndex(booleanQuery, 1000, is));
-//        try {
-//            RAMIndex.close(iw);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
         return aspectScores;
     }
 
@@ -335,7 +328,7 @@ public class SupportPsgQE {
         Set<String> runFileStrings = new LinkedHashSet<>();
 
         int rank = 1;
-        String info = "Experiment3";
+        String info = "SupportPsgQE";
         Map<String, Double> sortedScoreMap = Utilities.sortByValueDescending(scoreMap);
 
         for (String entity : sortedScoreMap.keySet()) {
@@ -413,3 +406,4 @@ public class SupportPsgQE {
 
 
 }
+
