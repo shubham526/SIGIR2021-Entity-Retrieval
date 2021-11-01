@@ -24,6 +24,11 @@ All data associated with this work is licensed and released under a
 3. **Our features and other data**
 Click [here](https://unh.box.com/s/oj9bsxlfl5cwusi9iboo61rib1di3lhd) to download a tar file which contains the passage rankings, entity rankings, support passage rankings, various ground truth files, feature files, etc. used in this work. 
 
+## Necessary Installations
+To run the code, the following libraries need to be installed:
+1. **TREC CAR Tools.** The TREC CAR data can be read using the official `trec-car-tools`. The python code for creating QueryId/EntityId to QueryName/EntityName mappings requires `trec-car-tools` to read the TREC CAR data. It can be installed via pip as follows: `pip install trec-car-tools`. For more information, [read the documentation](https://trec-car-tools.readthedocs.io/en/latest/), and [see the Github repository](https://github.com/TREMA-UNH/trec-car-tools).
+2. **TagMe Entity Linker.** We use the TagMe entity linker to entity link the queries. It can be installed via pip as follows: `pip install tagme`. For more details, [read the documentation](https://pypi.org/project/tagme/), [see the demo](https://tagme.d4science.org/tagme/), and [read the paper](https://dl.acm.org/doi/pdf/10.1145/1871437.1871689?casa_token=dUr_eu7goxQAAAAA%3A5dwXjRtjVbwFHfVfaGc3o56VqiqHbdNGQGHthth1KoQYUxmH1uF_VPUaw2H_IFfoZX-FdlkqgKk)
+
 ## Running the code
 The code is partially in Java and partially in Python. The code has been tested using Java openJDK 13 and Python 3.7. The java code required Maven 3 to be installed. 
 
@@ -31,21 +36,30 @@ To install the java code:
 - Clone this repository using `git clone`. 
 - Inside the repository, there are two folders: java (containing the java code) and python (containing the python code). From the java directory, run the following command: `mvn clean install`. This should create a jar file called `SIGIR2021-Short-Final-Code-Release-1.0-SNAPSHOT-jar-with-dependencies.jar` inside `java/target`.
 
-You may now run this jar file using `java -jar SIGIR2021-Short-Final-Code-Release-1.0-SNAPSHOT-jar-with-dependencies.jar` along with various command line arguments (see below)  to create the features for training. 
+You may now run this jar file using `java -jar SIGIR2021-Short-Final-Code-Release-1.0-SNAPSHOT-jar-with-dependencies.jar` with various command line arguments (see below)  to create the features for training. 
 
 The folder "python" contains scripts for the following:
 1. `bert_entity_rerank.py`: Entity re-ranking using [BERT-as-a-service](https://github.com/hanxiao/bert-as-service).
-2. `create_query_id_to_name_mapping.py`: Script to create a mapping from TREC CAR entity-ids to entity-names.
-3. `create_query_annotations.py`: Script to annotate TREC CAR queries using TagMe.
-4. `entity_rerank.py`: Re-implementation of the entity ranking method from [Gerritse et al., 2020](https://arxiv.org/abs/2005.02843).
+2. `create_query_id_to_name_mapping.py`: Script to create a mapping from TREC CAR QueryIds to QueryNames.
+3. `create_entity_id_to_name_mapping.py`: Script to create a mapping from TREC CAR EntityIds to EntityNames.
+4. `create_query_annotations.py`: Script to annotate TREC CAR queries using TagMe.
+5. `wiki2vec_entity_rerank.py`: Re-implementation of the entity ranking method from [Gerritse et al., 2020](https://arxiv.org/abs/2005.02843).
 
-The python scripts have a help function which may be called using the `--help` option with then script. For example, `python entity_rerank.py --help`. 
+The python scripts have a help function which may be called using the `--help` option with then script. For example, `python bert_entity_rerank.py --help`.
 
-## Reading the aspect-linked TREC CAR corpus
-The TREC CAR data can be read using the official `trec-car-tools` available [here](https://github.com/TREMA-UNH/trec-car-tools). We use the Java version in this work.
+Before running the code to produce the runs files (features), we need several resources such as an index of all paragraphs in the TREC CAR corpus, index of all aspects in the aspect catalog, etc. Below, we show how to create these resources. 
 
-Below is a code snippet in Java to read the aspect-linked corpus. 
+### Create Lucene index of aspect-linked TREC CAR corpus
+Download the aspect linked TREC CAR corpus from the link above. An index of this corpus can be created as follows:
+```
+java -jar SIGIR2021-Short-Final-Code-Release-1.0-SNAPSHOT-jar-with-dependencies.jar index-corpus $path_to_corpus_dir $index
+```
+The index created above contains the following information: 
+- `Id`: ParagraphIds of the paragraphs.
+- `Text`: Text of the paragraphs.
+- `Entities`: JSON-encoded strings representing entities in a paragraph. A JSON-string contains the following information: the anchor text of the entity link (`mention`), the id of the Wikipedia page pointed to by the entity link (`linkPageId`), the name of the Wikipedia page pointed to by the entity link (`linkPageName`), and the aspect of the entity in the paragraph (`aspect`).
 
+**Reading the TREC CAR aspect linked corpus in Java.** The TREC CAR data can be read using the official `trec-car-tools` available [here](https://github.com/TREMA-UNH/trec-car-tools). Below is a code snippet in Java to read the aspect-linked corpus. 
 
 ```
  BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath));
@@ -98,6 +112,35 @@ Below is a code snippet in Java to read the aspect-linked corpus.
         return entityList;
     }
 ```
+
+### Create a Lucene index of the aspect catalog
+The aspect calatog can be found in the EAL dataset (link above). An index of this catalog can be created as follows:
+```
+java -jar SIGIR2021-Short-Final-Code-Release-1.0-SNAPSHOT-jar-with-dependencies.jar index-catalog $path_to_catalog_dir $index
+```
+The index created above contains the following information: 
+- `Id`: AspectIds of the aspects.
+- `Name`: Plain string representation of the aspect name.
+- `Text`: Text of the aspect, i.e., the text from the section on the Wikipedia page of the linked entity.
+- `Entities`: JSON-encoded strings representing entities in the aspect. 
+
+### Create a TSV file of mappings from QueryIds/EntityIds to QueryNames/EntityNames
+The corresponding python scripts can be used for this purpose.
+```
+python3 create_query_id_to_name_mapping.py --outlines $outlines_file --output $output_file --query-model $query_model
+python3 create_entity_id_to_name_mapping.py --corpus $paragraph_cbor --save $output_file 
+```
+The `outlines_file` is available from the TREC CAR dataset. We need to use the outlines file corresponding to the benchmark we are using. For example, for **BenchmarkY1-Train**, the outlines file to be used is **train.pages.cbor-outlines.cbor**. The **query_model** should be either `title` (for page-level queries) or `section` (for section-level queries). The **paragraph_cbor** is the `paragraphCorpus` available with the TREC CAR dataset. 
+
+Note that the above scripts writes the output in a TSV format, hence the file names should end with `.tsv`. 
+
+### Create a TSV file of query annotations
+The baselines _Wiki2Vec-ReRank_ and _BERT-ReRank_ in the paper need entity link annotations for the queries. We use TagMe entity linker for this purpose.
+```
+python3 create_query_annotations.py --queries $queries_file --save $output_file
+```
+The `queries_file` is the QueryId to QueryName mapping file created above. The `output_file` is a `.tsv` file.
+
 
 ## Learning-to-rank and ENT-Rank
 - We perform our learning-to-rank experiments using the toolkit `ranklips`. Read about it [here](https://www.cs.unh.edu/~dietz/rank-lips/).
