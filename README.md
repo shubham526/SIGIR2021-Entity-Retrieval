@@ -1,5 +1,5 @@
 # Entity Retrieval Using Fine-Grained Entity Aspects
-Shubham Chatterjee and Laura Dietz. 2021. Entity Retrieval Using Fine-Grained Entity Aspects. In _Proceedings of the 44th International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR ’21)._
+Shubham Chatterjee and Laura Dietz. 2021. [Entity Retrieval Using Fine-Grained Entity Aspects](https://www.cs.unh.edu/~sc1242/publications/pdf/sigir2021.pdf). In _Proceedings of the 44th International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR ’21)._
 
 This repository contains code associated with this paper and the instructions on how to execute the code. For detailed instructions on how to run the code, [read the documentation](https://github.com/shubham526/SIGIR2021-Entity-Retrieval/wiki/Entity-Retrieval-Using-Fine-Grained-Entity-Aspects). 
 
