@@ -16,6 +16,8 @@ All data associated with this work is licensed and released under a
 [cc-by-sa-image]: https://licensebuttons.net/l/by-sa/4.0/88x31.png
 [cc-by-sa-shield]: https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg
 
+For detailed instructions on how to run the code, [read the wiki](https://github.com/shubham526/SIGIR2021-Entity-Retrieval/wiki/Entity-Retrieval-Using-Fine-Grained-Entity-Aspects).
+
 ## Acknowledgement
 This material is based upon work supported by the National Science Foundation under Grant No. 1846017. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
 
