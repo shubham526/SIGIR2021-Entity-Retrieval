@@ -36,4 +36,4 @@ This material is based upon work supported by the National Science Foundation un
 ```
 
 ## Contact
-If you have any questions, please contact Shubham Chatterjee at <sc1242@wildcats.unh.edu> or <shubham.chatterjee94@gmail.com>.  
+If you have any questions, please contact Shubham Chatterjee at <shubham.chatterjee@unh.edu> or <shubham.chatterjee94@gmail.com>.  
